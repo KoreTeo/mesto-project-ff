@@ -9,15 +9,15 @@ function createCard(imageLink, title, removeCard){
   const cardDeleteButton = cardElementClone.querySelector('.card__delete-button');
   
   cardImage.src = imageLink;
+  cardImage.alt = title;
   cardTitle.textContent = title;
-  cardDeleteButton.addEventListener('click', removeCard);
+  cardDeleteButton.addEventListener('click', () => removeCard(cardElementClone));
 
   return cardElementClone;
 }
 
-function removeCard(event) {
-  const cardElement = event.target.closest('.card')
-  cardElement.remove();
+function removeCard(card) {
+  card.remove();
 }
 
 initialCards.forEach(item => cardList.append(createCard(item.link, item.name, removeCard)));

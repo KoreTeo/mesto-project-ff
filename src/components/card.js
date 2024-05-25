@@ -1,5 +1,7 @@
-//функция создания карточки
-function createCard(imageLink, title, removeCard, handleImageClick, likeCard){
+import { deleteCard, addLike, deleteLike } from './api.js'
+
+// функция создания карточки
+function createCard(card, removeCard, handleImageClick, userId) {
   const cardTemplate = document.querySelector('#card-template').content;
   const cardElement = cardTemplate.querySelector('.card');
   const cardElementClone = cardElement.cloneNode(true);
@@ -7,26 +9,60 @@ function createCard(imageLink, title, removeCard, handleImageClick, likeCard){
   const cardTitle = cardElementClone.querySelector('.card__title');
   const cardDeleteButton = cardElementClone.querySelector('.card__delete-button');
   const cardLikeButton = cardElementClone.querySelector('.card__like-button');
-  
-  cardImage.src = imageLink;
-  cardImage.alt = title;
-  cardTitle.textContent = title;
+  const cardLikeCounter = cardElementClone.querySelector('.card__like-counter');
 
-  cardDeleteButton.addEventListener('click', () => removeCard(cardElementClone));
-  cardImage.addEventListener('click', () => handleImageClick(imageLink, title))
-  cardLikeButton.addEventListener('click', likeCard);
+  if (card.owner._id !== userId) {
+    cardDeleteButton.disabled = true;
+    cardDeleteButton.classList.add('card__delete-button_hidden');
+  }
+
+  cardImage.src = card.link;
+  cardImage.alt = card.name;
+  cardTitle.textContent = card.name;
+  cardLikeCounter.textContent = card.likes.length;
+
+  if (card.likes.some((user) => user._id === userId)) {
+    cardLikeButton.classList.add('card__like-button_is-active');
+  }
+
+  cardDeleteButton.addEventListener('click', () => removeCard(card._id, cardElementClone));
+  cardImage.addEventListener('click', () => handleImageClick(card))
+  cardLikeButton.addEventListener('click', (evt) => handleLikeButton(evt, cardLikeButton, card, cardLikeCounter));
 
   return cardElementClone;
 }
 
-//функция удаления элемента карточки
-function removeCard(card) {
-  card.remove();
+// функция удаления элемента карточки
+function removeCard(cardId, card) {
+  deleteCard(cardId)
+    .then(() => {
+      card.remove();
+    })
+    .catch((err) => console.log(err))
 }
 
-//функция лайка карточки
+// функция-обработчик лайка
+function handleLikeButton(evt, cardLikeButton, card, cardLikeCounter) {
+  if (cardLikeButton.classList.contains('card__like-button_is-active')) {
+    deleteLike(card._id)
+      .then((res) => {
+        cardLikeCounter.textContent = res.likes.length;
+        likeCard(evt)
+      })
+      .catch((err) => console.log(err))
+  }
+  else {
+    addLike(card._id)
+      .then((res) => {
+        cardLikeCounter.textContent = res.likes.length;
+        likeCard(evt)
+      })
+      .catch((err) => console.log(err))
+  }
+}
+
 function likeCard(evt) {
   evt.target.classList.toggle('card__like-button_is-active');
 }
 
-export {createCard, removeCard, likeCard}
+export { createCard, removeCard }

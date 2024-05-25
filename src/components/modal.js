@@ -1,22 +1,22 @@
 //функция открытия попапа
-function openModal (popup) {
+function openModal(popup) {
   popup.classList.add('popup_is-opened');
   popup.addEventListener('click', handleCloseOverlay)
   document.addEventListener('keydown', handleEscapeButton);
 }
 
 //функция закрытия попапа
-function closeModal (popup) {
+function closeModal(popup) {
   popup.classList.remove('popup_is-opened');
   popup.removeEventListener('click', handleCloseOverlay)
   document.removeEventListener('keydown', handleEscapeButton)
 }
 
 //функция-обработчик закрытия попапа по оверлею
-function handleCloseOverlay (evt) {
-    if (evt.currentTarget === evt.target) {
-      closeModal(evt.target);
-    }
+function handleCloseOverlay(evt) {
+  if (evt.currentTarget === evt.target) {
+    closeModal(evt.target);
+  }
 }
 
 //функция-обработчик закрытия попапа через Esc
@@ -27,4 +27,4 @@ function handleEscapeButton(evt) {
   };
 }
 
-export {openModal, closeModal}
+export { openModal, closeModal }

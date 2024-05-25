@@ -1,3 +1,5 @@
+@import url('./_hidden/card__delete-button_hidden.css');
+
 .card__delete-button {
   width: 18px;
   height: 18px;

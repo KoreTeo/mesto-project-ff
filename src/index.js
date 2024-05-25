@@ -50,19 +50,19 @@ editAvatarButton.addEventListener('click', () => {
 // функция обработчик отправки формы добавления карточки
 function handleNewCardFormSubmit(evt) {
   evt.preventDefault();
-  renderLoading(true);
+  renderLoading(evt.submitter, true);
 
   addCard({
     name: newCardName.value,
     link: newCardUrl.value,
   })
     .then((card) => {
-      cardList.prepend(createCard(card, removeCard, handleImageClick, card.owner._id))
+      cardList.prepend(createCard(card, removeCard, handleImageClick, card.owner._id));
+      closeModal(popupNewCard);
     })
     .catch((err) => console.log(err))
     .finally(() => {
-      renderLoading(false);
-      closeModal(popupNewCard);
+      renderLoading(evt.submitter, false);
     })
 }
 
@@ -71,7 +71,7 @@ addNewCardForm.addEventListener('submit', handleNewCardFormSubmit)
 // функция обработчик отправки формы изменения профиля
 function handleProfileFormSubmit(evt) {
   evt.preventDefault();
-  renderLoading(true)
+  renderLoading(evt.submitter, true)
 
   patchUserInfo({
     name: editProfileNameInput.value,
@@ -80,17 +80,16 @@ function handleProfileFormSubmit(evt) {
     .then((user) => {
       profileTitle.textContent = user.name;
       profileDescription.textContent = user.about;
+      closeModal(popupEditProfile);
     })
     .catch((err) => console.log(err))
     .finally(() => {
-      renderLoading(false);
-      closeModal(popupEditProfile);
+      renderLoading(evt.submitter, false);
     })
 }
 
 // Заполнение полей формы редактирования профиля
 function fillProfileInputs() {
-  editProfileForm.reset();
   editProfileNameInput.value = profileTitle.textContent;
   editProfileDescriptionInput.value = profileDescription.textContent;
 }
@@ -109,16 +108,16 @@ function handleImageClick(card) {
 // функция-обработчик отправки формы изменения аватара 
 function handleEditAvatarFormSubmit(evt) {
   evt.preventDefault();
-  renderLoading(true);
+  renderLoading(evt.submitter, true);
 
   updateAvatar(avatarInput.value)
     .then((user) => {
       profileImage.style = `background-image: url(${user.avatar})`;
+      closeModal(popupAvatar)
     })
     .catch((err) => console.log(err))
     .finally(() => {
-      renderLoading(false);
-      closeModal(popupAvatar)
+      renderLoading(evt.submitter, false);
     }
     )
 }
@@ -128,8 +127,7 @@ editAvatarForm.addEventListener('submit', handleEditAvatarFormSubmit)
 // закрытие модальных окон по крестику
 popupCloseButtonList.forEach(popupCloseButton => {
   const popup = popupCloseButton.closest('.popup');
-  popupCloseButton.addEventListener('click', () =>
-    closeModal(popup))
+  popupCloseButton.addEventListener('click', () => closeModal(popup))
 }
 )
 
@@ -145,28 +143,14 @@ const validationConfig = {
 
 enableValidation(validationConfig);
 
-function renderLoading(isLoading) {
-  const activePopup = document.querySelector('.popup_is-opened');
-  if (activePopup) {
-    const activeButton = activePopup.querySelector('.popup__button');
-    if (isLoading) {
-      activeButton.textContent = 'Сохранение...';
-    } else {
-      activeButton.textContent = 'Сохранить';
-    }
-  }
+function renderLoading(buttonElement, isLoading) {
+  buttonElement.textContent = isLoading ? 'Сохранение...' : 'Сохранить';
 }
 
-// загрузка карточек
+// загрузка карточек и данных пользователя
 Promise.all([getInitialCards(), getUserInfo()])
-  .then(([cards, userData]) => {
-    cards.forEach(card => cardList.append(createCard(card, removeCard, handleImageClick, userData._id)));
-  })
-  .catch((err) => console.log(err))
-
-// загрузка данных пользователя
-getUserInfo()
-  .then((user) => {
+  .then(([cards, user]) => {
+    cards.forEach(card => cardList.append(createCard(card, removeCard, handleImageClick, user._id)));
     profileTitle.textContent = user.name;
     profileDescription.textContent = user.about;
     profileImage.style = `background-image: url(${user.avatar})`
